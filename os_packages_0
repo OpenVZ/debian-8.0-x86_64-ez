@@ -1,0 +1,25 @@
+multiarch-support gcc-4.9-base libattr1 libcap2 libc-bin libgcc1 locales libdbus-1-3 libnih-dbus1 libc6 libnih1
+findutils
+libsigsegv2 libtinfo5 install-info readline-common libreadline6 libmpfr4 libgmp10 gawk
+perl-base
+liblocale-gettext-perl libtext-iconv-perl libtext-wrapi18n-perl libtext-charwidth-perl
+libpython3.4-minimal libexpat1 zlib1g libssl1.0.0  debconf-i18n debconf python3.4-minimal
+libpcre3 libselinux1
+libpam0g libpam-runtime libdb5.3 libaudit-common libaudit1 libpam-modules-bin libpam-modules base-files
+libacl1 libattr1 coreutils
+login
+tar
+gcc-4.8-base libstdc++6 lzma libbz2-1.0 liblzma5 xz-utils dpkg
+libtinfo5 libncursesw5 dselect
+sensible-utils
+debianutils
+mktemp
+sed
+libncurses5 ncurses-bin
+lsb-base
+dash
+bash
+libustr-1.0-1 libsepol1 libsemanage-common libsemanage1 passwd
+libuuid1
+libblkid1
+libslang2

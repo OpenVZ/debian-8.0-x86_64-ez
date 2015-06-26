@@ -1,0 +1,9 @@
+#!/bin/bash
+
+touch /etc/network/interfaces
+
+rm -rf /var/run > /dev/null 2>&1
+ln -s /run /var/run > /dev/null 2>&1
+touch /run/utmp > /dev/null 2>&1
+
+exit 0

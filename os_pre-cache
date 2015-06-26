@@ -1,0 +1,139 @@
+#!/bin/bash
+
+#sanify check
+if [ $# -lt 1 ] ; then
+	echo "usage $0 ROOTDIR"
+	exit 1
+fi
+
+rootdir=$1
+
+if [ -z "$rootdir" ]; then
+	echo "ROOTDIR is not set."
+	exit 1
+fi
+
+# Check root directory
+if [ ! -d $rootdir ]; then
+	echo "$rootdir: should be a directory."
+	exit 1
+fi
+
+pushd $rootdir > /dev/null
+
+mknod dev/urandom c 1 9
+chmod 0666 dev/urandom
+
+mkdir etc
+ln -sf /usr/share/zoneinfo/UTC etc/localtime
+
+echo "proc  /proc       proc    defaults    0    0" >> etc/fstab
+echo "none  /dev/pts    devpts  rw,gid=5,mode=620    0    0" >> etc/fstab
+echo "none  /run/shm    tmpfs   defaults    0    0" >> etc/fstab
+
+mkdir -p etc/init.d
+
+echo "#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          wide-dhcpv6-client
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/Stop WIDE DHCPv6 client
+# Description:       (empty)
+### END INIT INFO
+
+exit 0
+" > etc/init.d/wide-dhcpv6-client
+
+chmod 0755 etc/init.d/wide-dhcpv6-client
+
+echo "#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          bind9
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start and stop bind9
+# Description:       bind9 is a Domain Name Server (DNS)
+#        which translates ip addresses to and from internet names
+### END INIT INFO
+
+exit 0
+" > etc/init.d/bind9
+
+chmod 0755 etc/init.d/bind9
+
+# add some basic groups and users, provides by base-passwd
+# some debs (base-files,..) use it before base-passwd installation
+echo "root:*:0:
+daemon:*:1:
+bin:*:2:
+sys:*:3:
+adm:*:4:
+tty:*:5:
+disk:*:6:
+lp:*:7:
+mail:*:8:
+news:*:9:
+uucp:*:10:
+man:*:12:
+proxy:*:13:
+kmem:*:15:
+dialout:*:20:
+fax:*:21:
+voice:*:22:
+cdrom:*:24:
+floppy:*:25:
+tape:*:26:
+sudo:*:27:
+audio:*:29:
+dip:*:30:
+www-data:*:33:
+backup:*:34:
+operator:*:37:
+list:*:38:
+irc:*:39:
+src:*:40:
+gnats:*:41:
+shadow:*:42:
+utmp:*:43:
+video:*:44:
+sasl:*:45:
+plugdev:*:46:
+staff:*:50:
+games:*:60:
+users:*:100:
+nogroup:*:65534:" > etc/group
+
+echo "root:*:0:0:root:/root:/bin/bash
+daemon:*:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:*:2:2:bin:/bin:/usr/sbin/nologin
+sys:*:3:3:sys:/dev:/usr/sbin/nologin
+sync:*:4:65534:sync:/bin:/bin/sync
+games:*:5:60:games:/usr/games:/usr/sbin/nologin
+man:*:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:*:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:*:8:8:mail:/var/mail:/usr/sbin/nologin
+news:*:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:*:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:*:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:*:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:*:34:34:backup:/var/backups:/usr/sbin/nologin
+list:*:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:*:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:*:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:*:65534:65534:nobody:/nonexistent:/usr/sbin/nologin" > etc/passwd
+
+mkdir -p usr/bin
+ln -s /usr/bin/gawk usr/bin/awk
+
+popd > /dev/null

@@ -1,0 +1,3 @@
+$DEB_SERVER/debian jessie main contrib non-free
+$DEB_SERVER/debian jessie-updates main contrib non-free
+$DEB_SERVER/debian-security jessie/updates main contrib non-free

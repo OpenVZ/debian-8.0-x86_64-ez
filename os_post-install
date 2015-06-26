@@ -1,0 +1,257 @@
+#!/bin/bash
+
+MYDIR=`pwd`
+cd / >/dev/null
+
+ln -sf /proc/mounts etc/mtab
+
+# omit syncing for all log files
+# Disable klog
+CFG_FILE=etc/rsyslog.conf
+if [ -f $CFG_FILE ]; then
+    cat $CFG_FILE | sed -e "s,^\$ModLoad imklog,#\$ModLoad imklog,g" \
+        -e "s,[[:blank:]]/var/log/, -/var/log/,g" > ${CFG_FILE}.$$
+    if [ $? -eq 0 ]; then
+        chown --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+	chmod --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+	mv -f $CFG_FILE.$$ ${CFG_FILE} > /dev/null 2>&1
+    fi
+fi
+
+# Enable root login
+CFG_FILE=etc/ssh/sshd_config
+if [ -f $CFG_FILE ]; then
+    cat $CFG_FILE | sed "s,^PermitRootLogin.*,PermitRootLogin yes,g" > ${CFG_FILE}.$$
+    if [ $? -eq 0 ]; then
+        chown --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+	chmod --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+	mv -f $CFG_FILE.$$ ${CFG_FILE} > /dev/null 2>&1
+    fi
+fi
+
+# Convert system to shadow password files
+usr/sbin/pwconv
+
+# Set default target as multi-user target
+rm -f lib/systemd/system/default.target > /dev/null 2>&1
+ln -s multi-user.target lib/systemd/system/default.target > /dev/null 2>&1
+mkdir -p etc/systemd/system/default.target.wants > /dev/null 2>&1
+
+# turn off and stop some services
+for i in bind9 quotarpc fetchmail ondemand rsync uuidd wide-dhcpv6-client; do
+	systemctl stop $i > /dev/null 2>&1
+	systemctl disable $i > /dev/null 2>&1
+done
+
+# for upstart services comment out the start on in confs
+for i in nmbd smbd samba-ad-dc rpcbind; do
+	systemctl disable $i > /dev/null 2>&1
+done
+
+# export PATH
+CFG_FILE=etc/bash.bashrc
+if [ -f $CFG_FILE ] ; then
+	echo >> $CFG_FILE
+	echo "export PATH" >> $CFG_FILE
+	echo >> $CFG_FILE
+fi
+
+# apache tuning
+for worker in mpm_worker mpm_prefork mpm_event; do
+	CFG_FILE=etc/apache2/mods-available/$worker.conf
+	if [ -f $CFG_FILE ]; then
+	    sed -e "s/^[[:blank:]]*StartServers[[:blank:]]*.*/StartServers       1/" \
+		-e "s/^[[:blank:]]*MinSpareServers[[:blank:]]*.*/MinSpareServers    1/" \
+		-e "s/^[[:blank:]]*MaxSpareServers[[:blank:]]*.*/MaxSpareServers    5/" \
+		-e "s/^[[:blank:]]*MaxClients[[:blank:]]*.*/MaxClients        10/" \
+		-e "s/^[[:blank:]]*MinSpareThreads[[:blank:]]*.*/MinSpareThreads    1/" \
+		-e "s/^[[:blank:]]*MaxSpareThreads[[:blank:]]*.*/MaxSpareThreads    4/" \
+		$CFG_FILE > ${CFG_FILE}.$$
+		if [ $? -eq 0 ]; then
+		        chown --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+			chmod --reference=${CFG_FILE} $CFG_FILE.$$ || exit 1 > /dev/null 2>&1
+			mv -f $CFG_FILE.$$ ${CFG_FILE} > /dev/null 2>&1
+	        fi
+	fi
+done
+
+# and disable root user
+/usr/sbin/usermod -L root
+
+# do not execute some cron-jobs by default
+for cron_job_dir in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly; do
+	for cron_job in `find $cron_job_dir -type f | grep -v "logrotate\|\^."`; do
+		mv $cron_job $cron_job.disabled
+	done
+done
+
+# Fill /etc/apt/sources.list
+if [ ! -f etc/apt/sources.list ]; then
+
+cat << EOF > etc/apt/sources.list
+deb http://ftp.debian.org/debian jessie main contrib non-free
+deb http://ftp.debian.org/debian jessie-updates main contrib non-free
+deb http://security.debian.org jessie/updates main contrib non-free
+
+EOF
+
+fi
+
+# Disable bind9 ifup hook
+for i in etc/network/if-down.d/bind9 etc/network/if-up.d/bind9; do
+	mv $i $i.disabled
+done
+
+# Clean logs
+for i in `find var/log/ -type f`; do
+    echo "" > $i
+done
+
+# Remove /dev/log
+rm -f dev/log >/dev/null 2>&1
+
+# Fix modprobe.conf
+touch etc/modprobe.conf
+
+# Fix modules.dep
+echo "#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          modules_dep
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 6
+# Short-Description: modules.dep creation.
+# Description:       Create and destroy modules.dep.
+### END INIT INFO
+
+case \"\$1\" in
+  start|\"\")
+	if [ ! -d \"/lib/modules/\`uname -r\`\" ]; then
+		mkdir -p /lib/modules/\`uname -r\`
+	fi
+	depmod -a >/dev/null 2>&1
+	;;
+  restart|reload|force-reload)
+	echo \"Error: argument '\$1' not supported\" >&2
+	exit 3
+	;;
+  stop|force-stop)
+	if [ -d \"/lib/modules/\`uname -r\`\" ]; then
+		rm -rf /lib/modules/\`uname -r\`
+	fi
+	;;
+  *)
+	echo \"Usage: modules_dep.sh [start|stop]\" >&2
+	exit 3
+	;;
+esac
+
+:
+
+" > etc/init.d/modules_dep.sh
+chmod a+x etc/init.d/modules_dep.sh
+/usr/sbin/update-rc.d modules_dep.sh defaults >/dev/null 2>&1
+
+# Create empty /etc/inittab file
+touch etc/inittab
+
+# Turn back wide-dhcpv6-client init script and clean default conf file
+for i in etc/init.d/wide-dhcpv6-client etc/init.d/bind9; do
+	mv -f $i.dpkg-dist $i
+done
+# regenerate dhcp6cctlkey if exists
+cat > etc/default/wide-dhcpv6-client <<'EOFINITCONFFILE'
+# Defaults for dhcpv6 client initscript
+# Used by /etc/init.d/wide-dhcpv6-client
+
+# Interfaces on which the client should send DHCPv6 requests and listen to
+# answers. If empty, the client is deactivated.
+INTERFACES=""
+EOFINITCONFFILE
+
+rm -f etc/wide-dhcpv6/dhcp6cctlkey
+
+# Save /etc/rc.local copy
+mv etc/rc.local etc/rc.local.orig
+
+# ssh host keys hack
+echo "#!/bin/sh
+rm -f etc/ssh/ssh_host_*
+/usr/bin/ssh-keygen -t rsa -N '' -f /etc/ssh/ssh_host_rsa_key
+/usr/bin/ssh-keygen -t dsa -N '' -f /etc/ssh/ssh_host_dsa_key
+/usr/bin/ssh-keygen -t rsa1 -N '' -f /etc/ssh/ssh_host_key
+/usr/bin/ssh-keygen -t ecdsa -N '' -f /etc/ssh/ssh_host_ecdsa_key
+/usr/bin/ssh-keygen -t ed25519 -N '' -f /etc/ssh/ssh_host_ed25519_key
+systemctl restart ssh
+
+" > etc/rc.local
+
+# DHCP6CCTLKEY hack
+
+echo "DHCP6CCTLKEY=/etc/wide-dhcpv6/dhcp6cctlkey
+
+# The key mustn\'t be world readable
+umask 066
+
+echo \"Generating \${DHCP6CCTLKEY}...\" >&2
+dd if=/dev/random bs=32 count=1 2>/dev/null | \
+	uuencode -m \${DHCP6CCTLKEY} | \
+	head -n 2 | tail -n 1 > \${DHCP6CCTLKEY}
+
+umask 022
+mv -f /etc/rc.local.orig /etc/rc.local
+" >> etc/rc.local
+chmod a+x etc/rc.local
+
+# saslauthd tuning
+CFG_FILE=etc/default/saslauthd
+if [ -f $CFG_FILE ]; then
+    sed -i -e "s/^THREADS=.*/THREADS=2/" -e "s/^START=.*/START=yes/" \
+        $CFG_FILE
+fi
+
+# stop postfix and remove sockets
+systemctl stop postfix > /dev/null 2>&1
+for postfix_socket in `find var/spool/postfix -type s`; do
+	rm -f $postfix_socket > /dev/null 2>&1
+done
+
+apt-key update > /dev/null 2>&1
+
+# Setup systemd as /sbin/init
+rm -f sbin/init > /dev/null 2>&1
+ln -s ../lib/systemd/systemd sbin/init > /dev/null 2>&1
+
+# Create vzfifo service
+cat >> lib/systemd/system/vzfifo.service << EOL
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=Tell that Container is started
+ConditionPathExists=/proc/vz
+ConditionPathExists=!/proc/bc
+After=multi-user.target quotaon.service quotacheck.service
+
+[Service]
+Type=forking
+ExecStart=/bin/touch /.vzfifo
+TimeoutSec=0
+RemainAfterExit=no
+SysVStartPriority=99
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Enable services
+for service in vzfifo; do
+	systemctl enable $service > /dev/null 2>&1
+done
+
+cd $MYDIR > /dev/null

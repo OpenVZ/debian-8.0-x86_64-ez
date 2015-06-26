@@ -1,0 +1,6 @@
+default-jre-headless
+openjdk-7-jre
+openjdk-7-jre-headless
+ca-certificates-java
+libatk-wrapper-java
+libatk-wrapper-java-jni
