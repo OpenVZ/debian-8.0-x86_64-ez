@@ -12,9 +12,8 @@
 %define ostemplatedir %templatedir/os/default
 
 # vzpkgenv related
-%define pkgman debx64
-%define package_manager rpm%pkgman
-%define package_manager_pkg vzpkgenv%pkgman >= 7.0.0
+%define package_manager dpkgx64
+%define package_manager_pkg vzpkgenvdebx64 >= 7.0.0
 
 # Files lists
 %define files_lst() \
@@ -52,7 +51,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
