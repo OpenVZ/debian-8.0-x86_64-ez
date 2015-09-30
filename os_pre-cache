@@ -72,6 +72,9 @@ exit 0
 
 chmod 0755 etc/init.d/bind9
 
+mkdir -p etc/udev
+touch etc/udev/disabled
+
 # add some basic groups and users, provides by base-passwd
 # some debs (base-files,..) use it before base-passwd installation
 echo "root:*:0:

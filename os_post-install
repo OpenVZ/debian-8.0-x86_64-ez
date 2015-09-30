@@ -254,4 +254,6 @@ for service in vzfifo; do
 	systemctl enable $service > /dev/null 2>&1
 done
 
+rm -f etc/udev/disabled
+
 cd $MYDIR > /dev/null
