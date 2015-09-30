@@ -38,8 +38,12 @@ done))\
 %define obsoletes_lst() \
 %((for tmpl in %1; do\
 [ $tmpl = os ] && continue;\
+if [ "${tmpl#os_}" != "$tmpl" ]; then\
+echo "Provides: %templatename-%templatever-%templatearch-${tmpl#os_}-ez = %version-%release";\
+else\
 echo "Obsoletes: $tmpl-%templatename-%templatever-%templatearch-ez < 7.0.0";\
 echo "Provides: $tmpl-%templatename-%templatever-%templatearch-ez = %version-%release";\
+fi;
 done))\
 %nil
 
@@ -51,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -79,12 +83,10 @@ installfile() {
 
 rm -f files.lst
 for tmpl in %templates_list; do
-	[ $tmpl = "os" ] && dir=%buildroot/%ostemplatedir || \
-		dir=%buildroot/%templatedir/app/$tmpl/default
-
-	mkdir -p $dir
-
 	if [ $tmpl = "os" ]; then
+		dir=%buildroot/%ostemplatedir
+		mkdir -p $dir
+
 		# Os template only files
 
 		# Text
@@ -118,7 +120,29 @@ for tmpl in %templates_list; do
 		# Additional packages
 		installfile $tmpl 0644 $dir packages_0
 		installfile $tmpl 0644 $dir packages_1
+	elif [ "${tmpl#os_}" != "$tmpl"  ]; then
+		dir=%buildroot/%templatedir/os/${tmpl#os_}
+		mkdir -p $dir
+
+		# Text
+		echo "%fullname ${tmpl#os_} %fulltemplatearch Virtuozzo Template" > $dir/description
+		echo "%fullname ${tmpl#os_} %fulltemplatearch Virtuozzo Template" > $dir/summary
+
+		# Os template setname cache scripts
+		installfile $tmpl 0755 $dir pre-cache
+		installfile $tmpl 0755 $dir post-cache
+		installfile $tmpl 0755 $dir mid-pre-install
+		installfile $tmpl 0755 $dir mid-post-install
+		installfile $tmpl 0755 $dir pre-upgrade
+		installfile $tmpl 0755 $dir post-upgrade
+
+		# Additional packages
+		installfile $tmpl 0644 $dir packages_0
+		installfile $tmpl 0644 $dir packages_1
 	else
+		dir=%buildroot/%templatedir/app/$tmpl/default
+		mkdir -p $dir
+
 		# App templates only files
 
 		# Text
