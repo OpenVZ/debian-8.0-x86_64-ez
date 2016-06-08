@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,6 +174,9 @@ done
 %files -f files.lst
 
 %changelog
+* Wed Jun 08 2016 Konstantin Volkov <wolf@virtuozzo.com> 7.0.0-5
+- Technical rebuild, see #PSBM-47948
+
 * Wed Sep 30 2015 Konstantin Volckov <wolf@sw.ru> 7.0.0-3
 - Disable udev at create cache stage, see #PSBM-40046
 
