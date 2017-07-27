@@ -80,7 +80,7 @@ done
 
 # do not execute some cron-jobs by default
 for cron_job_dir in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly; do
-	for cron_job in `find $cron_job_dir -type f | grep -v "logrotate\|\^."`; do
+	for cron_job in `find $cron_job_dir -type f | grep -v "logrotate\|$cron_job_dir/\."`; do
 		mv $cron_job $cron_job.disabled
 	done
 done

@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 6%{?dist}
+Release: 7%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,6 +174,9 @@ done
 %files -f files.lst
 
 %changelog
+* Thu Jul 27 2017 Kristian Marcroft <Kristian.Marcroft@simplyroot.de> 7.0.0-7
+- fixed disabling crons in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly
+
 * Tue Dec  6 2016 Konstantin Volkov <wolf@virtuozzo.com> 7.0.0-6
 - Fixed timezone setup, see #PSBM-54121
 
