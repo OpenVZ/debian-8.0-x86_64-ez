@@ -90,7 +90,6 @@ if [ ! -f etc/apt/sources.list ]; then
 
 cat << EOF > etc/apt/sources.list
 deb http://ftp.debian.org/debian jessie main contrib non-free
-deb http://ftp.debian.org/debian jessie-updates main contrib non-free
 deb http://security.debian.org jessie/updates main contrib non-free
 
 EOF
