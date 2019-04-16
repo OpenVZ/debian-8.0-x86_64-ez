@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 7%{?dist}
+Release: 8%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,6 +174,9 @@ done
 %files -f files.lst
 
 %changelog
+* Tue Apr 16 2019 Ivan Loginovskikh <iloginovskikh@virtuozzo.com> 7.0.0-8
+- Removed jessie-updates, see #PSBM-93313 and https://lists.debian.org/debian-devel-announce/2019/03/msg00006.html
+
 * Thu Jul 27 2017 Kristian Marcroft <Kristian.Marcroft@simplyroot.de> 7.0.0-7
 - fixed disabling crons in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly
 
