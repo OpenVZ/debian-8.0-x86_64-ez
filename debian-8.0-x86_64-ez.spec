@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 8%{?dist}
+Release: 9%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,6 +174,9 @@ done
 %files -f files.lst
 
 %changelog
+* Tue Jun 25 2019 Denis Silakov <dsilakov@virtuozzo.com> 7.0.0-9
+- Install python3.4, not only python3.4-minimal, see PSBM-95733
+
 * Tue Apr 16 2019 Ivan Loginovskikh <iloginovskikh@virtuozzo.com> 7.0.0-8
 - Removed jessie-updates, see #PSBM-93313 and https://lists.debian.org/debian-devel-announce/2019/03/msg00006.html
 
