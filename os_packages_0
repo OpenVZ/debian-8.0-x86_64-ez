@@ -3,7 +3,7 @@ findutils
 libsigsegv2 libtinfo5 install-info readline-common libreadline6 libmpfr4 libgmp10 gawk
 perl-base
 liblocale-gettext-perl libtext-iconv-perl libtext-wrapi18n-perl libtext-charwidth-perl
-libpython3.4-minimal libexpat1 zlib1g libssl1.0.0  debconf-i18n debconf python3.4-minimal
+libpython3.4-minimal libexpat1 zlib1g libssl1.0.0  debconf-i18n debconf python3.4-minimal python3.4
 libpcre3 libselinux1
 libpam0g libpam-runtime libdb5.3 libaudit-common libaudit1 libpam-modules-bin libpam-modules base-files
 libacl1 libattr1 coreutils

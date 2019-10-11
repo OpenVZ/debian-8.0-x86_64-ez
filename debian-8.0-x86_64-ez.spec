@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 6%{?dist}
+Release: 10%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,8 +174,20 @@ done
 %files -f files.lst
 
 %changelog
-* Thu Oct  3 2019 Denis Silakov <dsilakov@virtuozzo.com> 7.0.0-6
+* Thu Oct  3 2019 Denis Silakov <dsilakov@virtuozzo.com> 7.0.0-10
 - Use separate variable for debian security repos, see #PSBM-97899
+
+* Tue Jun 25 2019 Denis Silakov <dsilakov@virtuozzo.com> 7.0.0-9
+- Install python3.4, not only python3.4-minimal, see PSBM-95733
+
+* Tue Apr 16 2019 Ivan Loginovskikh <iloginovskikh@virtuozzo.com> 7.0.0-8
+- Removed jessie-updates, see #PSBM-93313 and https://lists.debian.org/debian-devel-announce/2019/03/msg00006.html
+
+* Thu Jul 27 2017 Kristian Marcroft <Kristian.Marcroft@simplyroot.de> 7.0.0-7
+- fixed disabling crons in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly
+
+* Tue Dec  6 2016 Konstantin Volkov <wolf@virtuozzo.com> 7.0.0-6
+- Fixed timezone setup, see #PSBM-54121
 
 * Wed Jun 08 2016 Konstantin Volkov <wolf@virtuozzo.com> 7.0.0-5
 - Technical rebuild, see #PSBM-47948

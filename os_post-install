@@ -80,7 +80,7 @@ done
 
 # do not execute some cron-jobs by default
 for cron_job_dir in etc/cron.daily etc/cron.weekly etc/cron.monthly etc/cron.hourly; do
-	for cron_job in `find $cron_job_dir -type f | grep -v "logrotate\|\^."`; do
+	for cron_job in `find $cron_job_dir -type f | grep -v "logrotate\|$cron_job_dir/\."`; do
 		mv $cron_job $cron_job.disabled
 	done
 done
@@ -90,7 +90,6 @@ if [ ! -f etc/apt/sources.list ]; then
 
 cat << EOF > etc/apt/sources.list
 deb http://ftp.debian.org/debian jessie main contrib non-free
-deb http://ftp.debian.org/debian jessie-updates main contrib non-free
 deb http://security.debian.org jessie/updates main contrib non-free
 
 EOF
