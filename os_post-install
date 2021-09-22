@@ -183,6 +183,8 @@ rm -f etc/ssh/ssh_host_*
 /usr/bin/ssh-keygen -t ecdsa -N '' -f /etc/ssh/ssh_host_ecdsa_key
 /usr/bin/ssh-keygen -t ed25519 -N '' -f /etc/ssh/ssh_host_ed25519_key
 systemctl restart ssh
+# create /dev/fuse device
+mknod -m 0666 /dev/fuse c 10 229
 
 " > etc/rc.local
 

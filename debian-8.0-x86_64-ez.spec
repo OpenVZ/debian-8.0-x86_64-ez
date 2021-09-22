@@ -55,7 +55,7 @@ Name: %templatename-%templatever-%templatearch-ez
 Group: Virtuozzo/Templates
 License: GPL
 Version: 7.0.0
-Release: 10%{?dist}
+Release: 11%{?dist}
 BuildRoot: %_tmppath/%name-root
 BuildArch: noarch
 Requires: %package_manager_pkg
@@ -174,6 +174,9 @@ done
 %files -f files.lst
 
 %changelog
+* Wed Sep 22 2021 Alexander Stefanov <astefanov@virtuozzo.com> 7.0.0-11
+- mknod /dev/fuse, see #PSBM-133281
+
 * Thu Oct  3 2019 Denis Silakov <dsilakov@virtuozzo.com> 7.0.0-10
 - Use separate variable for debian security repos, see #PSBM-97899
 
