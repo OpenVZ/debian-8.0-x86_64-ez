@@ -183,13 +183,15 @@ rm -f etc/ssh/ssh_host_*
 /usr/bin/ssh-keygen -t ecdsa -N '' -f /etc/ssh/ssh_host_ecdsa_key
 /usr/bin/ssh-keygen -t ed25519 -N '' -f /etc/ssh/ssh_host_ed25519_key
 systemctl restart ssh
-# create /dev/fuse device
-mknod -m 0666 /dev/fuse c 10 229
 
 " > etc/rc.local
 
-# DHCP6CCTLKEY hack
+echo 'ACTION=="add", RUN+="/bin/mknod -m 0666 /dev/fuse c 10 229"' >  lib/udev/rules.d/55-fuse.rules
+# mask modules load service to prevent issues with fuse
+# see #PSBM-135658
+systemctl mask systemd-modules-load.service
 
+# DHCP6CCTLKEY hack
 echo "DHCP6CCTLKEY=/etc/wide-dhcpv6/dhcp6cctlkey
 
 # The key mustn\'t be world readable
